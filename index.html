@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equipo de Medios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+
+  /* ===================== TOKENS ===================== */
+  :root{
+    --ink:#050505;
+    --ink-2:#0d0d0d;
+    --paper:#f5f5f3;
+    --ash:#9a9a97;
+    --ash-dim:#605f5c;
+    --glass:rgba(255,255,255,.05);
+    --glass-strong:rgba(255,255,255,.09);
+    --line:rgba(255,255,255,.13);
+    --line-strong:rgba(255,255,255,.28);
+    --radius:18px;
+    --radius-sm:10px;
+    --display:'Space Grotesk',sans-serif;
+    --body:'Inter',sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--body);
+    line-height:1.5;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  /* ---- fondo fotográfico (opcional, configurable en el script) ---- */
+  .bg-layer{
+    position:fixed;inset:0;
+    background-size:cover;
+    background-position:center;
+    filter:grayscale(1) contrast(1.05) brightness(.55) blur(2px);
+    transform:scale(1.04);
+    opacity:0;
+    transition:opacity 2.5s ease;
+    z-index:0;
+  }
+  .bg-layer.is-visible{opacity:.55;}
+
+  .bg-overlay{
+    position:fixed;inset:0;
+    background:linear-gradient(180deg, rgba(5,5,5,.74), rgba(5,5,5,.88) 45%, rgba(5,5,5,.95));
+    z-index:1;
+    pointer-events:none;
+  }
+
+  /* textura de fondo tipo osciloscopio, muy sutil */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:repeating-linear-gradient(to bottom, transparent 0 39px, rgba(255,255,255,.035) 40px);
+    pointer-events:none;
+    z-index:2;
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:radial-gradient(ellipse at 50% -10%, rgba(255,255,255,.06), transparent 55%);
+    pointer-events:none;
+    z-index:2;
+  }
+
+  main, header, footer{position:relative;z-index:3;}
+
+  a{color:inherit;text-decoration:none;}
+
+  ::selection{background:var(--paper);color:var(--ink);}
+
+  :focus-visible{outline:2px solid var(--paper);outline-offset:3px;border-radius:4px;}
+
+  /* ===================== UTILIDADES ===================== */
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+
+  .glass{
+    background:var(--glass);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    backdrop-filter:blur(20px) saturate(140%);
+    -webkit-backdrop-filter:blur(20px) saturate(140%);
+  }
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ash);
+  }
+
+  .meter{display:inline-flex;align-items:flex-end;gap:3px;height:14px;}
+  .meter span{width:3px;background:var(--paper);opacity:.55;border-radius:1px;}
+  .meter span:nth-child(1){height:40%;}
+  .meter span:nth-child(2){height:100%;}
+  .meter span:nth-child(3){height:65%;}
+  .meter span:nth-child(4){height:85%;}
+
+  .btn{
+    font-family:var(--mono);
+    font-size:12.5px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    color:var(--paper);
+    background:var(--glass);
+    border:1px solid var(--line-strong);
+    border-radius:999px;
+    padding:10px 18px;
+    cursor:pointer;
+    transition:background .2s ease, transform .15s ease, border-color .2s ease;
+  }
+  .btn:hover{background:var(--glass-strong);border-color:var(--paper);}
+  .btn:active{transform:scale(.97);}
+  .btn-ghost{background:transparent;}
+  .btn-block{width:100%;}
+  .btn-danger{border-color:rgba(255,255,255,.4);color:var(--paper);}
+
+  .icon-btn{
+    width:38px;height:38px;
+    display:grid;place-items:center;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--glass);
+    cursor:pointer;
+    color:var(--paper);
+    transition:border-color .2s ease, background .2s ease;
+    flex-shrink:0;
+  }
+  .icon-btn:hover{border-color:var(--paper);background:var(--glass-strong);}
+
+  .hidden{display:none !important;}
+
+  /* reveal on scroll */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease, transform .7s ease;}
+  .reveal.is-visible{opacity:1;transform:translateY(0);}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important;}
+    html{scroll-behavior:auto;}
+    .reveal{opacity:1;transform:none;}
+  }
+
+  /* ===================== HEADER ===================== */
+  .topbar{
+    position:sticky;top:0;
+    z-index:40;
+    background:rgba(5,5,5,.65);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar .wrap{
+    display:flex;align-items:center;justify-content:space-between;
+    height:72px;
+  }
+  .brand{
+    display:flex;align-items:center;gap:10px;
+    font-family:var(--display);
+    font-weight:600;
+    font-size:17px;
+    letter-spacing:.01em;
+  }
+  .live-dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--paper);
+    animation:pulse 2.4s ease-in-out infinite;
+    flex-shrink:0;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(245,245,243,.35);}
+    50%{opacity:.45;box-shadow:0 0 0 6px rgba(245,245,243,0);}
+  }
+  nav{display:flex;align-items:center;gap:6px;}
+  nav a{
+    font-family:var(--mono);
+    font-size:12.5px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    color:var(--ash);
+    padding:8px 12px;
+    border-radius:999px;
+    transition:color .2s ease, background .2s ease;
+  }
+  nav a:hover{color:var(--paper);background:var(--glass);}
+
+  /* ===================== HERO ===================== */
+  .hero{padding:88px 0 64px;}
+  .hero .eyebrow{margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+  .hero h1{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:clamp(38px,7vw,64px);
+    line-height:1.05;
+    letter-spacing:-.01em;
+    max-width:14ch;
+  }
+  .hero p{
+    margin-top:22px;
+    max-width:52ch;
+    color:var(--ash);
+    font-size:16px;
+  }
+  .hero-banner{
+    margin-top:28px;
+    padding:14px 18px;
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--paper);
+    border:1px dashed var(--line-strong);
+    border-radius:var(--radius-sm);
+    max-width:60ch;
+  }
+
+  /* ===================== SECTIONS ===================== */
+  .section{padding:56px 0;border-top:1px solid var(--line);}
+  .section-head{
+    display:flex;align-items:flex-end;justify-content:space-between;
+    gap:16px;flex-wrap:wrap;
+    margin-bottom:32px;
+  }
+  .section-head h2{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:28px;
+  }
+  .section-sub{color:var(--ash);font-size:13.5px;margin-top:6px;}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+    gap:18px;
+  }
+  #grid-cronograma{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
+
+  .empty-state{
+    grid-column:1/-1;
+    padding:36px 24px;
+    text-align:center;
+    color:var(--ash);
+    font-family:var(--mono);
+    font-size:13px;
+    border:1px dashed var(--line);
+    border-radius:var(--radius);
+  }
+
+  /* ---- tarjeta cronograma tipo calendario ---- */
+  .card-servicio-cal{
+    padding:18px;
+    display:flex;
+    gap:16px;
+    position:relative;
+    transition:transform .2s ease, border-color .2s ease;
+  }
+  .card-servicio-cal:hover{transform:translateY(-3px);border-color:var(--line-strong);}
+
+  .fecha-badge{
+    width:68px;flex-shrink:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:10px 4px;
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius-sm);
+    background:rgba(255,255,255,.03);
+  }
+  .fecha-badge .dia-semana{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--ash);text-transform:uppercase;}
+  .fecha-badge .dia-numero{font-family:var(--display);font-size:26px;font-weight:700;line-height:1.15;margin:2px 0;}
+  .fecha-badge .mes{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--ash);text-transform:uppercase;}
+
+  .servicio-info{flex:1;min-width:0;}
+  .horario-tag{
+    font-family:var(--mono);font-size:11.5px;color:var(--ash);
+    text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;
+  }
+  .asignados{display:flex;gap:14px;flex-wrap:wrap;}
+  .asignado{width:64px;text-align:center;}
+  .asignado .asignado-nombre{font-size:11.5px;color:var(--paper);margin-top:5px;line-height:1.2;word-break:break-word;}
+  .asignado .asignado-rol{font-family:var(--mono);font-size:9px;letter-spacing:.04em;text-transform:uppercase;color:var(--ash);margin-top:1px;}
+  .sin-asignar{font-family:var(--mono);font-size:12px;color:var(--ash-dim);}
+
+  /* ---- tarjeta integrante ---- */
+  .card-integrante{
+    padding:22px 18px;
+    text-align:center;
+    position:relative;
+  }
+  .card-integrante:hover{border-color:var(--line-strong);}
+  .avatar{
+    width:76px;height:76px;border-radius:50%;
+    margin:0 auto 14px;
+    object-fit:cover;
+    border:1px solid var(--line-strong);
+    background:var(--ink-2);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--display);font-size:22px;color:var(--ash);
+  }
+  .avatar-sm{width:44px;height:44px;font-size:13px;margin:0 auto;}
+  .card-integrante h3{font-family:var(--display);font-size:16px;font-weight:600;}
+  .card-integrante .rol{
+    margin-top:4px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--ash);
+  }
+
+  .card-edit{
+    position:absolute;top:10px;right:10px;
+    width:30px;height:30px;
+  }
+
+  /* ---- recursos ---- */
+  .recursos-panel{
+    padding:32px;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:20px;flex-wrap:wrap;
+  }
+  .recursos-panel p{color:var(--ash);font-size:14px;max-width:46ch;}
+
+  /* ===================== FOOTER ===================== */
+  footer{
+    border-top:1px solid var(--line);
+    padding:32px 0 48px;
+  }
+  footer .wrap{
+    display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:12px;
+  }
+  footer p{font-family:var(--mono);font-size:11.5px;color:var(--ash-dim);}
+
+  /* ===================== MODALES ===================== */
+  .modal-bg{
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.6);
+    backdrop-filter:blur(4px);
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;
+    z-index:100;
+  }
+  .modal{
+    width:100%;max-width:420px;
+    padding:28px;
+    max-height:88vh;overflow-y:auto;
+    position:relative;
+  }
+  .modal h3{font-family:var(--display);font-size:20px;font-weight:600;margin-bottom:18px;}
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;margin-bottom:6px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--ash);
+  }
+  .field input{
+    width:100%;
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:11px 12px;
+    color:var(--paper);
+    font-family:var(--body);
+    font-size:14.5px;
+  }
+  .field input:focus{border-color:var(--paper);outline:none;}
+  .modal-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+  .modal-actions .btn{flex:1;}
+  .modal-msg{
+    font-family:var(--mono);font-size:12px;color:var(--ash);
+    margin-top:12px;min-height:16px;
+  }
+  .modal-close{
+    position:absolute;top:18px;right:18px;
+  }
+
+  @media (max-width:640px){
+    .topbar .wrap{height:64px;}
+    nav a{padding:8px 9px;font-size:11.5px;}
+    .hero{padding:56px 0 44px;}
+    .recursos-panel{flex-direction:column;align-items:flex-start;}
+    .card-servicio-cal{flex-direction:column;}
+    .fecha-badge{flex-direction:row;width:100%;gap:6px;justify-content:center;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg-layer" id="bg-layer-a"></div>
+  <div class="bg-layer" id="bg-layer-b"></div>
+  <div class="bg-overlay"></div>
+
+  <header class="topbar">
+    <div class="wrap">
+      <div class="brand">
+        <span class="live-dot"></span>
+        Equipo de Medios
+      </div>
+      <nav>
+        <a href="#equipo">Equipo</a>
+        <a href="#cronograma">Cronograma</a>
+        <a href="#recursos">Recursos</a>
+        <button class="icon-btn" id="btn-admin" title="Modo administrador" aria-label="Modo administrador">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap">
+      <div class="eyebrow">
+        <span class="meter"><span></span><span></span><span></span><span></span></span>
+        CONSOLA · CÁMARAS · TRANSMISIÓN · VISUALES
+      </div>
+      <h1>Todo lo del equipo, en un solo lugar.</h1>
+      <p>Quién está en consola este domingo, quién arma cámaras, y los materiales que necesitás para el servicio — actualizado en tiempo real desde acá, sin planillas sueltas.</p>
+      <div class="hero-banner hidden" id="banner-config">
+        ⚠ Todavía falta conectar este sitio con tu base de datos. Buscá <strong>API_URL</strong> al final del código y pegá ahí la URL de tu Apps Script.
+      </div>
+    </section>
+
+    <section class="section wrap reveal" id="equipo">
+      <div class="section-head">
+        <div>
+          <h2>Equipo</h2>
+          <p class="section-sub">Quiénes componen el equipo de medios</p>
+        </div>
+        <button class="btn hidden" id="btn-add-equipo">+ Agregar integrante</button>
+      </div>
+      <div class="grid" id="grid-equipo">
+        <div class="empty-state">Cargando equipo…</div>
+      </div>
+    </section>
+
+    <section class="section wrap reveal" id="cronograma">
+      <div class="section-head">
+        <div>
+          <h2>Cronograma</h2>
+          <p class="section-sub">Roles asignados por fecha de servicio</p>
+        </div>
+        <button class="btn hidden" id="btn-add-cronograma">+ Agregar fecha</button>
+      </div>
+      <div class="grid" id="grid-cronograma">
+        <div class="empty-state">Cargando cronograma…</div>
+      </div>
+    </section>
+
+    <section class="section wrap reveal" id="recursos">
+      <div class="section-head">
+        <div>
+          <h2>Recursos</h2>
+          <p class="section-sub">Guías, presets y material del equipo</p>
+        </div>
+      </div>
+      <div class="glass recursos-panel">
+        <p>Por ahora, los archivos viven en una carpeta compartida de Drive. Pronto vas a poder subir y bajar todo directo desde acá.</p>
+        <a class="btn" id="link-recursos" href="#" target="_blank" rel="noopener">Ver carpeta de recursos ↗</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>EQUIPO DE MEDIOS</p>
+      <p id="footer-status">conectando…</p>
+    </div>
+  </footer>
+
+  <!-- ===================== MODAL: PIN ===================== -->
+  <div class="modal-bg hidden" id="modal-pin">
+    <div class="glass modal">
+      <button class="icon-btn modal-close" data-close="modal-pin" aria-label="Cerrar">✕</button>
+      <h3>Modo administrador</h3>
+      <form id="form-pin">
+        <div class="field">
+          <label for="input-pin">PIN del equipo</label>
+          <input type="password" id="input-pin" inputmode="numeric" required>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-block">Entrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== MODAL: CRONOGRAMA ===================== -->
+  <div class="modal-bg hidden" id="modal-cronograma">
+    <div class="glass modal">
+      <button class="icon-btn modal-close" data-close="modal-cronograma" aria-label="Cerrar">✕</button>
+      <h3 id="titulo-modal-cronograma">Agregar fecha</h3>
+      <form id="form-cronograma">
+        <div class="field"><label for="c-fecha">Fecha</label><input type="date" id="c-fecha" required></div>
+        <div class="field"><label for="c-horario">Horario</label><input type="text" id="c-horario" placeholder="10:00 hs"></div>
+        <div class="field"><label for="c-consola">Consola / Audio</label><input type="text" id="c-consola" placeholder="Nombre (igual al de Equipo)"></div>
+        <div class="field"><label for="c-transmision">Transmisión / vMix</label><input type="text" id="c-transmision" placeholder="Nombre (igual al de Equipo)"></div>
+        <div class="field"><label for="c-pantallas">Pantallas / Visuales</label><input type="text" id="c-pantallas" placeholder="Nombre (igual al de Equipo)"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost btn-danger hidden" id="btn-eliminar-cronograma">Eliminar</button>
+          <button type="submit" class="btn">Guardar</button>
+        </div>
+        <p class="modal-msg" id="msg-cronograma"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== MODAL: EQUIPO ===================== -->
+  <div class="modal-bg hidden" id="modal-equipo">
+    <div class="glass modal">
+      <button class="icon-btn modal-close" data-close="modal-equipo" aria-label="Cerrar">✕</button>
+      <h3 id="titulo-modal-equipo">Agregar integrante</h3>
+      <form id="form-equipo">
+        <div class="field"><label for="e-nombre">Nombre</label><input type="text" id="e-nombre" required></div>
+        <div class="field"><label for="e-rol">Rol</label><input type="text" id="e-rol" placeholder="Sonido, cámaras, visuales..."></div>
+        <div class="field"><label for="e-foto">Link de la foto</label><input type="text" id="e-foto" placeholder="https://..."></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost btn-danger hidden" id="btn-eliminar-equipo">Eliminar</button>
+          <button type="submit" class="btn">Guardar</button>
+        </div>
+        <p class="modal-msg" id="msg-equipo"></p>
+      </form>
+    </div>
+  </div>
+
+<script>
+(function(){
+
+  // ============================================================
+  //  CONFIGURACIÓN — pegá acá tus datos
+  // ============================================================
+  const API_URL = "PEGA_AQUI_LA_URL_DE_TU_APPS_SCRIPT"; // termina en /exec
+  const RESOURCES_FOLDER_URL = "PEGA_AQUI_EL_LINK_DE_TU_CARPETA_DE_DRIVE";
+
+  // Fotos de fondo (opcional): 1 a 3 links a fotos de la consola / plataforma de sonido.
+  // Se muestran en blanco y negro y desenfocadas de fondo, para que no compitan con el texto.
+  const BACKGROUND_PHOTOS = [
+    "",
+    "",
+    ""
+  ].filter(Boolean);
+  // ============================================================
+
+  document.getElementById('link-recursos').href = RESOURCES_FOLDER_URL;
+
+  const sinConfigurar = !API_URL || API_URL.indexOf('PEGA_AQUI') !== -1;
+  if (sinConfigurar) {
+    document.getElementById('banner-config').classList.remove('hidden');
+  }
+
+  // ---------- fondo fotográfico con crossfade ----------
+  (function initFondo(){
+    const layerA = document.getElementById('bg-layer-a');
+    const layerB = document.getElementById('bg-layer-b');
+    if (!BACKGROUND_PHOTOS.length) return;
+
+    let idx = 0;
+    let usandoA = true;
+    layerA.style.backgroundImage = 'url("' + BACKGROUND_PHOTOS[0] + '")';
+    layerA.classList.add('is-visible');
+
+    if (BACKGROUND_PHOTOS.length > 1){
+      setInterval(function(){
+        idx = (idx + 1) % BACKGROUND_PHOTOS.length;
+        const entrante = usandoA ? layerB : layerA;
+        const saliente = usandoA ? layerA : layerB;
+        entrante.style.backgroundImage = 'url("' + BACKGROUND_PHOTOS[idx] + '")';
+        entrante.classList.add('is-visible');
+        saliente.classList.remove('is-visible');
+        usandoA = !usandoA;
+      }, 9000);
+    }
+  })();
+
+  let pinActual = null; // solo en memoria: se pierde al recargar la página, y está bien que sea así
+  let editando = { tipo: null, id: null };
+  let ultimoCronograma = [];
+  let ultimoEquipo = [];
+
+  const DIAS = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+  const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+
+  // ---------- helpers ----------
+  function iniciales(nombre){
+    return (nombre || '?').trim().split(/\s+/).slice(0,2).map(function(p){ return p[0]; }).join('').toUpperCase();
+  }
+
+  function badgeFecha(fechaISO){
+    if (!fechaISO) return { dia:'', numero:'--', mes:'' };
+    const d = new Date(fechaISO + 'T00:00:00');
+    if (isNaN(d.getTime())) return { dia:'', numero:'--', mes:'' };
+    return { dia: DIAS[d.getDay()], numero: d.getDate(), mes: MESES[d.getMonth()] };
+  }
+
+  function buscarFotoPorNombre(nombre){
+    if (!nombre) return null;
+    const limpio = nombre.trim().toLowerCase();
+    const encontrado = ultimoEquipo.find(function(p){ return (p.nombre || '').trim().toLowerCase() === limpio; });
+    return encontrado ? encontrado.foto : null;
+  }
+
+  function asignadoHTML(rolEtiqueta, nombre){
+    if (!nombre) return '';
+    const foto = buscarFotoPorNombre(nombre);
+    const avatar = foto
+      ? '<div class="avatar avatar-sm" style="background-image:url(&quot;' + foto + '&quot;);background-size:cover;background-position:center;"></div>'
+      : '<div class="avatar avatar-sm">' + iniciales(nombre) + '</div>';
+    return '<div class="asignado">' + avatar +
+      '<div class="asignado-nombre">' + nombre + '</div>' +
+      '<div class="asignado-rol">' + rolEtiqueta + '</div>' +
+    '</div>';
+  }
+
+  function abrir(id){ document.getElementById(id).classList.remove('hidden'); }
+  function cerrar(id){ document.getElementById(id).classList.add('hidden'); }
+
+  document.querySelectorAll('[data-close]').forEach(function(btn){
+    btn.addEventListener('click', function(){ cerrar(btn.getAttribute('data-close')); });
+  });
+  document.querySelectorAll('.modal-bg').forEach(function(bg){
+    bg.addEventListener('click', function(e){ if (e.target === bg) bg.classList.add('hidden'); });
+  });
+
+  // ---------- carga de datos ----------
+  async function cargar(accion){
+    if (sinConfigurar) throw new Error('sin configurar');
+    const resp = await fetch(API_URL + '?action=' + accion);
+    if (!resp.ok) throw new Error('respuesta no válida');
+    return resp.json();
+  }
+
+  async function cargarEquipo(){
+    const cont = document.getElementById('grid-equipo');
+    try{
+      const datos = await cargar('equipo');
+      ultimoEquipo = Array.isArray(datos) ? datos : [];
+      renderEquipo(ultimoEquipo);
+    }catch(err){
+      cont.innerHTML = '<div class="empty-state">No se pudo cargar el equipo. Revisá la conexión con Apps Script.</div>';
+    }
+  }
+
+  async function cargarCronograma(){
+    const cont = document.getElementById('grid-cronograma');
+    try{
+      const datos = await cargar('cronograma');
+      ultimoCronograma = Array.isArray(datos) ? datos : [];
+      renderCronograma(ultimoCronograma);
+    }catch(err){
+      cont.innerHTML = '<div class="empty-state">No se pudo cargar el cronograma. Revisá la conexión con Apps Script.</div>';
+    }
+  }
+
+  async function refrescarEquipoYCronograma(){
+    await cargarEquipo();
+    renderCronograma(ultimoCronograma); // vuelve a cruzar fotos con los nombres del cronograma ya cargado
+  }
+
+  function renderCronograma(lista){
+    ultimoCronograma = lista;
+    const cont = document.getElementById('grid-cronograma');
+    if (!lista.length){
+      cont.innerHTML = '<div class="empty-state">Todavía no hay fechas cargadas.</div>';
+      return;
+    }
+    cont.innerHTML = lista.map(function(item){
+      const f = badgeFecha(item.fecha);
+      const admin = pinActual ? '<button class="icon-btn card-edit" data-editar-cronograma=\'' + JSON.stringify(item).replace(/'/g,'&#39;') + '\'>✎</button>' : '';
+      const asignados = asignadoHTML('Consola', item.consola) + asignadoHTML('Transmisión', item.transmision) + asignadoHTML('Pantallas', item.pantallas);
+      return '<div class="glass card-servicio-cal">' + admin +
+        '<div class="fecha-badge"><span class="dia-semana">' + f.dia + '</span><span class="dia-numero">' + f.numero + '</span><span class="mes">' + f.mes + '</span></div>' +
+        '<div class="servicio-info">' +
+          (item.horario ? '<div class="horario-tag">' + item.horario + '</div>' : '') +
+          '<div class="asignados">' + (asignados || '<span class="sin-asignar">Sin asignar todavía</span>') + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    document.querySelectorAll('[data-editar-cronograma]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        abrirModalCronograma(JSON.parse(btn.getAttribute('data-editar-cronograma')));
+      });
+    });
+  }
+
+  function renderEquipo(lista){
+    ultimoEquipo = lista;
+    const cont = document.getElementById('grid-equipo');
+    if (!lista.length){
+      cont.innerHTML = '<div class="empty-state">Todavía no hay integrantes cargados.</div>';
+      return;
+    }
+    cont.innerHTML = lista.map(function(item){
+      const admin = pinActual ? '<button class="icon-btn card-edit" data-editar-equipo=\'' + JSON.stringify(item).replace(/'/g,'&#39;') + '\'>✎</button>' : '';
+      const foto = item.foto
+        ? '<img class="avatar" src="' + item.foto + '" alt="' + (item.nombre||'') + '" onerror="this.replaceWith(Object.assign(document.createElement(\'div\'),{className:\'avatar\',textContent:\'' + iniciales(item.nombre) + '\'}))">'
+        : '<div class="avatar">' + iniciales(item.nombre) + '</div>';
+      return '<div class="glass card-integrante">' + admin + foto +
+        '<h3>' + (item.nombre || 'Sin nombre') + '</h3>' +
+        '<div class="rol">' + (item.rol || '') + '</div>' +
+        '</div>';
+    }).join('');
+    document.querySelectorAll('[data-editar-equipo]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        abrirModalEquipo(JSON.parse(btn.getAttribute('data-editar-equipo')));
+      });
+    });
+  }
+
+  // ---------- modal cronograma ----------
+  function abrirModalCronograma(item){
+    editando = { tipo:'cronograma', id: item ? item.id : null };
+    document.getElementById('titulo-modal-cronograma').textContent = item ? 'Editar fecha' : 'Agregar fecha';
+    document.getElementById('c-fecha').value = item ? (item.fecha || '') : '';
+    document.getElementById('c-horario').value = item ? (item.horario || '') : '';
+    document.getElementById('c-consola').value = item ? (item.consola || '') : '';
+    document.getElementById('c-transmision').value = item ? (item.transmision || '') : '';
+    document.getElementById('c-pantallas').value = item ? (item.pantallas || '') : '';
+    document.getElementById('msg-cronograma').textContent = '';
+    document.getElementById('btn-eliminar-cronograma').classList.toggle('hidden', !item);
+    abrir('modal-cronograma');
+  }
+
+  document.getElementById('btn-add-cronograma').addEventListener('click', function(){ abrirModalCronograma(null); });
+
+  document.getElementById('form-cronograma').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const datos = {
+      id: editando.id,
+      fecha: document.getElementById('c-fecha').value,
+      horario: document.getElementById('c-horario').value,
+      consola: document.getElementById('c-consola').value,
+      transmision: document.getElementById('c-transmision').value,
+      pantallas: document.getElementById('c-pantallas').value
+    };
+    await enviar('guardarCronograma', datos, 'msg-cronograma', 'modal-cronograma', cargarCronograma);
+  });
+
+  document.getElementById('btn-eliminar-cronograma').addEventListener('click', async function(){
+    if (!confirm('¿Eliminar esta fecha del cronograma?')) return;
+    await enviar('eliminarCronograma', { id: editando.id }, 'msg-cronograma', 'modal-cronograma', cargarCronograma);
+  });
+
+  // ---------- modal equipo ----------
+  function abrirModalEquipo(item){
+    editando = { tipo:'equipo', id: item ? item.id : null };
+    document.getElementById('titulo-modal-equipo').textContent = item ? 'Editar integrante' : 'Agregar integrante';
+    document.getElementById('e-nombre').value = item ? (item.nombre || '') : '';
+    document.getElementById('e-rol').value = item ? (item.rol || '') : '';
+    document.getElementById('e-foto').value = item ? (item.foto || '') : '';
+    document.getElementById('msg-equipo').textContent = '';
+    document.getElementById('btn-eliminar-equipo').classList.toggle('hidden', !item);
+    abrir('modal-equipo');
+  }
+
+  document.getElementById('btn-add-equipo').addEventListener('click', function(){ abrirModalEquipo(null); });
+
+  document.getElementById('form-equipo').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const datos = {
+      id: editando.id,
+      nombre: document.getElementById('e-nombre').value,
+      rol: document.getElementById('e-rol').value,
+      foto: document.getElementById('e-foto').value
+    };
+    await enviar('guardarIntegrante', datos, 'msg-equipo', 'modal-equipo', refrescarEquipoYCronograma);
+  });
+
+  document.getElementById('btn-eliminar-equipo').addEventListener('click', async function(){
+    if (!confirm('¿Eliminar a este integrante del equipo?')) return;
+    await enviar('eliminarIntegrante', { id: editando.id }, 'msg-equipo', 'modal-equipo', refrescarEquipoYCronograma);
+  });
+
+  // ---------- envío genérico (POST) ----------
+  async function enviar(accion, datos, idMensaje, idModal, refrescar){
+    const msg = document.getElementById(idMensaje);
+    if (sinConfigurar){ msg.textContent = 'Falta configurar API_URL en el código.'; return; }
+    msg.textContent = 'Guardando…';
+    try{
+      const resp = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita el preflight de CORS con Apps Script
+        body: JSON.stringify({ pin: pinActual, accion: accion, datos: datos })
+      });
+      const data = await resp.json();
+      if (data.success){
+        cerrar(idModal);
+        refrescar();
+      } else {
+        msg.textContent = data.message || 'No se pudo guardar.';
+      }
+    }catch(err){
+      msg.textContent = 'Error de conexión. Intentá de nuevo.';
+    }
+  }
+
+  // ---------- modo administrador ----------
+  document.getElementById('btn-admin').addEventListener('click', function(){
+    if (pinActual){
+      pinActual = null;
+      actualizarModoAdmin();
+    } else {
+      abrir('modal-pin');
+    }
+  });
+
+  document.getElementById('form-pin').addEventListener('submit', function(e){
+    e.preventDefault();
+    pinActual = document.getElementById('input-pin').value;
+    document.getElementById('input-pin').value = '';
+    cerrar('modal-pin');
+    actualizarModoAdmin();
+  });
+
+  function actualizarModoAdmin(){
+    document.getElementById('btn-add-cronograma').classList.toggle('hidden', !pinActual);
+    document.getElementById('btn-add-equipo').classList.toggle('hidden', !pinActual);
+    document.getElementById('btn-admin').style.borderColor = pinActual ? 'var(--paper)' : '';
+    renderCronograma(ultimoCronograma);
+    renderEquipo(ultimoEquipo);
+  }
+
+  // ---------- scroll reveal ----------
+  const obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if (entry.isIntersecting) entry.target.classList.add('is-visible');
+    });
+  }, { threshold: .12 });
+  document.querySelectorAll('.reveal').forEach(function(el){ obs.observe(el); });
+
+  // ---------- init ----------
+  document.getElementById('footer-status').textContent = sinConfigurar ? 'sin conectar' : 'conectado';
+  if (!sinConfigurar){
+    cargarEquipo().then(cargarCronograma); // primero equipo, así el cronograma ya puede cruzar las fotos
+  } else {
+    document.getElementById('grid-cronograma').innerHTML = '<div class="empty-state">Conectá tu Apps Script para ver el cronograma acá.</div>';
+    document.getElementById('grid-equipo').innerHTML = '<div class="empty-state">Conectá tu Apps Script para ver el equipo acá.</div>';
+  }
+
+})();
+</script>
+</body>
+</html>
