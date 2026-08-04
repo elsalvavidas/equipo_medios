@@ -98,6 +98,15 @@
     -webkit-backdrop-filter:blur(20px) saturate(140%);
   }
 
+  /* Efecto glass específico para notitas secundarias */
+  .card-glass-notita {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius);
+  }
+
   .eyebrow{
     font-family:var(--mono);
     font-size:12px;
@@ -445,7 +454,7 @@
         <button class="btn hidden" id="btn-add-equipo">+ Agregar integrante</button>
       </div>
       <div class="grid" id="grid-equipo">
-        <div class="empty-state">Cargando equipo…</div>
+        <div class="empty-state card-glass-notita">Cargando equipo…</div>
       </div>
     </section>
 
@@ -458,7 +467,7 @@
         <button class="btn hidden" id="btn-add-cronograma">+ Agregar fecha</button>
       </div>
       <div class="grid" id="grid-cronograma">
-        <div class="empty-state">Cargando cronograma…</div>
+        <div class="empty-state card-glass-notita">Cargando cronograma…</div>
       </div>
     </section>
 
@@ -469,7 +478,7 @@
           <p class="section-sub">Guías, presets y material del equipo</p>
         </div>
       </div>
-      <div class="glass recursos-panel">
+      <div class="card-glass-notita recursos-panel">
         <p>Por ahora, los archivos viven en una carpeta compartida de Drive. Pronto vas a poder subir y bajar todo directo desde acá.</p>
         <a class="btn" id="link-recursos" href="#" target="_blank" rel="noopener">Ver carpeta de recursos ↗</a>
       </div>
@@ -485,7 +494,7 @@
 
   <!-- ===================== MODAL: PIN ===================== -->
   <div class="modal-bg hidden" id="modal-pin">
-    <div class="glass modal">
+    <div class="card-glass-notita modal">
       <button class="icon-btn modal-close" data-close="modal-pin" aria-label="Cerrar">✕</button>
       <h3>Modo administrador</h3>
       <form id="form-pin">
@@ -502,7 +511,7 @@
 
   <!-- ===================== MODAL: CRONOGRAMA ===================== -->
   <div class="modal-bg hidden" id="modal-cronograma">
-    <div class="glass modal">
+    <div class="card-glass-notita modal">
       <button class="icon-btn modal-close" data-close="modal-cronograma" aria-label="Cerrar">✕</button>
       <h3 id="titulo-modal-cronograma">Agregar fecha</h3>
       <form id="form-cronograma">
@@ -533,7 +542,7 @@
 
   <!-- ===================== MODAL: EQUIPO ===================== -->
   <div class="modal-bg hidden" id="modal-equipo">
-    <div class="glass modal">
+    <div class="card-glass-notita modal">
       <button class="icon-btn modal-close" data-close="modal-equipo" aria-label="Cerrar">✕</button>
       <h3 id="titulo-modal-equipo">Agregar integrante</h3>
       <form id="form-equipo">
@@ -661,7 +670,7 @@
       ultimoEquipo = Array.isArray(datos) ? datos : [];
       renderEquipo(ultimoEquipo);
     }catch(err){
-      cont.innerHTML = '<div class="empty-state">No se pudo cargar el equipo. Revisá la conexión con Apps Script.</div>';
+      cont.innerHTML = '<div class="empty-state card-glass-notita">No se pudo cargar el equipo. Revisá la conexión con Apps Script.</div>';
     }
   }
 
@@ -672,7 +681,7 @@
       ultimoCronograma = Array.isArray(datos) ? datos : [];
       renderCronograma(ultimoCronograma);
     }catch(err){
-      cont.innerHTML = '<div class="empty-state">No se pudo cargar el cronograma. Revisá la conexión con Apps Script.</div>';
+      cont.innerHTML = '<div class="empty-state card-glass-notita">No se pudo cargar el cronograma. Revisá la conexión con Apps Script.</div>';
     }
   }
 
@@ -685,7 +694,7 @@
     ultimoCronograma = lista;
     const cont = document.getElementById('grid-cronograma');
     if (!lista.length){
-      cont.innerHTML = '<div class="empty-state">Todavía no hay fechas cargadas.</div>';
+      cont.innerHTML = '<div class="empty-state card-glass-notita">Todavía no hay fechas cargadas.</div>';
       return;
     }
     cont.innerHTML = lista.map(function(item){
@@ -695,7 +704,7 @@
       const bgColor = item.color || 'rgba(255, 255, 255, 0.05)';
       const tituloEvento = item.titulo ? '<div style="font-family:var(--display);font-weight:600;font-size:15px;margin-bottom:4px;color:var(--paper);">' + item.titulo + '</div>' : '';
 
-      return '<div class="glass card-servicio-cal" style="background-color: ' + bgColor + ';">' + admin +
+      return '<div class="card-glass-notita card-servicio-cal" style="background-color: ' + bgColor + ';">' + admin +
         '<div class="fecha-badge"><span class="dia-semana">' + f.dia + '</span><span class="dia-numero">' + f.numero + '</span><span class="mes">' + f.mes + '</span></div>' +
         '<div class="servicio-info">' +
           tituloEvento +
@@ -716,7 +725,7 @@
     ultimoEquipo = lista;
     const cont = document.getElementById('grid-equipo');
     if (!lista.length){
-      cont.innerHTML = '<div class="empty-state">Todavía no hay integrantes cargados.</div>';
+      cont.innerHTML = '<div class="empty-state card-glass-notita">Todavía no hay integrantes cargados.</div>';
       return;
     }
     cont.innerHTML = lista.map(function(item){
@@ -724,7 +733,7 @@
       const foto = item.foto
         ? '<img class="avatar" src="' + item.foto + '" alt="' + (item.nombre||'') + '" onerror="this.replaceWith(Object.assign(document.createElement(\'div\'),{className:\'avatar\',textContent:\'' + iniciales(item.nombre) + '\'}))">'
         : '<div class="avatar">' + iniciales(item.nombre) + '</div>';
-      return '<div class="glass card-integrante">' + admin + foto +
+      return '<div class="card-glass-notita card-integrante">' + admin + foto +
         '<h3>' + (item.nombre || 'Sin nombre') + '</h3>' +
         '<div class="rol">' + (item.rol || '') + '</div>' +
         '</div>';
@@ -867,8 +876,8 @@
   if (!sinConfigurar){
     cargarEquipo().then(cargarCronograma);
   } else {
-    document.getElementById('grid-cronograma').innerHTML = '<div class="empty-state">Conectá tu Apps Script para ver el cronograma acá.</div>';
-    document.getElementById('grid-equipo').innerHTML = '<div class="empty-state">Conectá tu Apps Script para ver el equipo acá.</div>';
+    document.getElementById('grid-cronograma').innerHTML = '<div class="empty-state card-glass-notita">Conectá tu Apps Script para ver el cronograma acá.</div>';
+    document.getElementById('grid-equipo').innerHTML = '<div class="empty-state card-glass-notita">Conectá tu Apps Script para ver el equipo acá.</div>';
   }
 
 })();
