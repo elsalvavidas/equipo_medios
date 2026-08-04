@@ -260,13 +260,18 @@
     border-radius:var(--radius);
   }
 
-  /* ---- tarjeta cronograma tipo calendario ---- */
+  /* ---- tarjeta cronograma tipo calendario/agenda ---- */
   .card-servicio-cal{
     padding:18px;
     display:flex;
     gap:16px;
     position:relative;
     transition:transform .2s ease, border-color .2s ease;
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    border-radius:12px;
+    border:1px solid var(--line);
+    margin-bottom:16px;
   }
   .card-servicio-cal:hover{transform:translateY(-3px);border-color:var(--line-strong);}
 
@@ -363,7 +368,7 @@
     font-family:var(--mono);font-size:11px;letter-spacing:.05em;
     text-transform:uppercase;color:var(--ash);
   }
-  .field input{
+  .field input, .field select{
     width:100%;
     background:rgba(255,255,255,.04);
     border:1px solid var(--line);
@@ -373,7 +378,8 @@
     font-family:var(--body);
     font-size:14.5px;
   }
-  .field input:focus{border-color:var(--paper);outline:none;}
+  .field input:focus, .field select:focus{border-color:var(--paper);outline:none;}
+  .field select option { background: #111; color: #fff; }
   .modal-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
   .modal-actions .btn{flex:1;}
   .modal-msg{
@@ -502,9 +508,20 @@
       <form id="form-cronograma">
         <div class="field"><label for="c-fecha">Fecha</label><input type="date" id="c-fecha" required></div>
         <div class="field"><label for="c-horario">Horario</label><input type="text" id="c-horario" placeholder="10:00 hs"></div>
-        <div class="field"><label for="c-consola">Consola / Audio</label><input type="text" id="c-consola" placeholder="Nombre (igual al de Equipo)"></div>
-        <div class="field"><label for="c-transmision">Transmisión / vMix</label><input type="text" id="c-transmision" placeholder="Nombre (igual al de Equipo)"></div>
-        <div class="field"><label for="c-pantallas">Pantallas / Visuales</label><input type="text" id="c-pantallas" placeholder="Nombre (igual al de Equipo)"></div>
+        <div class="field"><label for="c-titulo">Título del Evento (opcional)</label><input type="text" id="c-titulo" placeholder="Ej: Ensayo o Servicio"></div>
+        <div class="field">
+          <label for="c-color">Color de la tarjeta</label>
+          <select id="c-color">
+            <option value="rgba(255, 255, 255, 0.05)">Gris (Por defecto)</option>
+            <option value="rgba(59, 130, 246, 0.15)">Azul</option>
+            <option value="rgba(16, 185, 129, 0.15)">Verde</option>
+            <option value="rgba(239, 68, 68, 0.15)">Rojo</option>
+            <option value="rgba(139, 92, 246, 0.15)">Violeta</option>
+          </select>
+        </div>
+        <div class="field"><label for="c-sonido">Sonido</label><input type="text" id="c-sonido" placeholder="Nombre (igual al de Equipo)"></div>
+        <div class="field"><label for="c-transmision">Transmisión</label><input type="text" id="c-transmision" placeholder="Nombre (igual al de Equipo)"></div>
+        <div class="field"><label for="c-letras">Letras</label><input type="text" id="c-letras" placeholder="Nombre (igual al de Equipo)"></div>
         <div class="modal-actions">
           <button type="button" class="btn btn-ghost btn-danger hidden" id="btn-eliminar-cronograma">Eliminar</button>
           <button type="submit" class="btn">Guardar</button>
@@ -542,7 +559,6 @@
   const RESOURCES_FOLDER_URL = "PEGA_AQUI_EL_LINK_DE_TU_CARPETA_DE_DRIVE";
 
   // Fotos de fondo (opcional): 1 a 3 links a fotos de la consola / plataforma de sonido.
-  // Se muestran en blanco y negro y desenfocadas de fondo, para que no compitan con el texto.
   const BACKGROUND_PHOTOS = [
     "",
     "",
@@ -581,7 +597,7 @@
     }
   })();
 
-  let pinActual = null; // solo en memoria: se pierde al recargar la página, y está bien que sea así
+  let pinActual = null; 
   let editando = { tipo: null, id: null };
   let ultimoCronograma = [];
   let ultimoEquipo = [];
@@ -662,7 +678,7 @@
 
   async function refrescarEquipoYCronograma(){
     await cargarEquipo();
-    renderCronograma(ultimoCronograma); // vuelve a cruzar fotos con los nombres del cronograma ya cargado
+    renderCronograma(ultimoCronograma);
   }
 
   function renderCronograma(lista){
@@ -675,15 +691,20 @@
     cont.innerHTML = lista.map(function(item){
       const f = badgeFecha(item.fecha);
       const admin = pinActual ? '<button class="icon-btn card-edit" data-editar-cronograma=\'' + JSON.stringify(item).replace(/'/g,'&#39;') + '\'>✎</button>' : '';
-      const asignados = asignadoHTML('Consola', item.consola) + asignadoHTML('Transmisión', item.transmision) + asignadoHTML('Pantallas', item.pantallas);
-      return '<div class="glass card-servicio-cal">' + admin +
+      const asignados = asignadoHTML('Sonido', item.sonido) + asignadoHTML('Transmisión', item.transmision) + asignadoHTML('Letras', item.letras);
+      const bgColor = item.color || 'rgba(255, 255, 255, 0.05)';
+      const tituloEvento = item.titulo ? '<div style="font-family:var(--display);font-weight:600;font-size:15px;margin-bottom:4px;color:var(--paper);">' + item.titulo + '</div>' : '';
+
+      return '<div class="glass card-servicio-cal" style="background-color: ' + bgColor + ';">' + admin +
         '<div class="fecha-badge"><span class="dia-semana">' + f.dia + '</span><span class="dia-numero">' + f.numero + '</span><span class="mes">' + f.mes + '</span></div>' +
         '<div class="servicio-info">' +
+          tituloEvento +
           (item.horario ? '<div class="horario-tag">' + item.horario + '</div>' : '') +
-          '<div class="asignados">' + (asignados || '<span class="sin-asignar">Sin asignar todavía</span>') + '</div>' +
+          '<div class="asignados" style="margin-top:8px;">' + (asignados || '<span class="sin-asignar">Sin asignar todavía</span>') + '</div>' +
         '</div>' +
       '</div>';
     }).join('');
+
     document.querySelectorAll('[data-editar-cronograma]').forEach(function(btn){
       btn.addEventListener('click', function(){
         abrirModalCronograma(JSON.parse(btn.getAttribute('data-editar-cronograma')));
@@ -708,6 +729,7 @@
         '<div class="rol">' + (item.rol || '') + '</div>' +
         '</div>';
     }).join('');
+
     document.querySelectorAll('[data-editar-equipo]').forEach(function(btn){
       btn.addEventListener('click', function(){
         abrirModalEquipo(JSON.parse(btn.getAttribute('data-editar-equipo')));
@@ -721,9 +743,11 @@
     document.getElementById('titulo-modal-cronograma').textContent = item ? 'Editar fecha' : 'Agregar fecha';
     document.getElementById('c-fecha').value = item ? (item.fecha || '') : '';
     document.getElementById('c-horario').value = item ? (item.horario || '') : '';
-    document.getElementById('c-consola').value = item ? (item.consola || '') : '';
+    document.getElementById('c-titulo').value = item ? (item.titulo || '') : '';
+    document.getElementById('c-color').value = item ? (item.color || 'rgba(255, 255, 255, 0.05)') : 'rgba(255, 255, 255, 0.05)';
+    document.getElementById('c-sonido').value = item ? (item.sonido || '') : '';
     document.getElementById('c-transmision').value = item ? (item.transmision || '') : '';
-    document.getElementById('c-pantallas').value = item ? (item.pantallas || '') : '';
+    document.getElementById('c-letras').value = item ? (item.letras || '') : '';
     document.getElementById('msg-cronograma').textContent = '';
     document.getElementById('btn-eliminar-cronograma').classList.toggle('hidden', !item);
     abrir('modal-cronograma');
@@ -737,9 +761,11 @@
       id: editando.id,
       fecha: document.getElementById('c-fecha').value,
       horario: document.getElementById('c-horario').value,
-      consola: document.getElementById('c-consola').value,
+      titulo: document.getElementById('c-titulo').value,
+      color: document.getElementById('c-color').value,
+      sonido: document.getElementById('c-sonido').value,
       transmision: document.getElementById('c-transmision').value,
-      pantallas: document.getElementById('c-pantallas').value
+      letras: document.getElementById('c-letras').value
     };
     await enviar('guardarCronograma', datos, 'msg-cronograma', 'modal-cronograma', cargarCronograma);
   });
@@ -787,7 +813,7 @@
     try{
       const resp = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita el preflight de CORS con Apps Script
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ pin: pinActual, accion: accion, datos: datos })
       });
       const data = await resp.json();
@@ -839,7 +865,7 @@
   // ---------- init ----------
   document.getElementById('footer-status').textContent = sinConfigurar ? 'sin conectar' : 'conectado';
   if (!sinConfigurar){
-    cargarEquipo().then(cargarCronograma); // primero equipo, así el cronograma ya puede cruzar las fotos
+    cargarEquipo().then(cargarCronograma);
   } else {
     document.getElementById('grid-cronograma').innerHTML = '<div class="empty-state">Conectá tu Apps Script para ver el cronograma acá.</div>';
     document.getElementById('grid-equipo').innerHTML = '<div class="empty-state">Conectá tu Apps Script para ver el equipo acá.</div>';
