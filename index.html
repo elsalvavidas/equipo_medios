@@ -701,6 +701,28 @@
       const f = badgeFecha(item.fecha);
       const admin = pinActual ? '<button class="icon-btn card-edit" data-editar-cronograma=\'' + JSON.stringify(item).replace(/'/g,'&#39;') + '\'>✎</button>' : '';
       const asignados = asignadoHTML('Sonido', item.sonido) + asignadoHTML('Transmisión', item.transmision) + asignadoHTML('Letras', item.letras);
+      const tituloEvento = item.titulo ? '<div style="font-family:var(--display);font-weight:600;font-size:15px;margin-bottom:4px;color:var(--paper);">' + item.titulo + '</div>' : '';
+
+      return '<div class="card-glass-notita card-servicio-cal">' + admin +
+        '<div class="fecha-badge"><span class="dia-semana">' + f.dia + '</span><span class="dia-numero">' + f.numero + '</span><span class="mes">' + f.mes + '</span></div>' +
+        '<div class="servicio-info">' +
+          tituloEvento +
+          (item.horario ? '<div class="horario-tag">' + item.horario + '</div>' : '') +
+          '<div class="asignados" style="margin-top:8px;">' + (asignados || '<span class="sin-asignar">Sin asignar todavía</span>') + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    document.querySelectorAll('[data-editar-cronograma]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        abrirModalCronograma(JSON.parse(btn.getAttribute('data-editar-cronograma')));
+      });
+    });
+  }
+    cont.innerHTML = lista.map(function(item){
+      const f = badgeFecha(item.fecha);
+      const admin = pinActual ? '<button class="icon-btn card-edit" data-editar-cronograma=\'' + JSON.stringify(item).replace(/'/g,'&#39;') + '\'>✎</button>' : '';
+      const asignados = asignadoHTML('Sonido', item.sonido) + asignadoHTML('Transmisión', item.transmision) + asignadoHTML('Letras', item.letras);
       const bgColor = item.color || 'rgba(255, 255, 255, 0.05)';
       const tituloEvento = item.titulo ? '<div style="font-family:var(--display);font-weight:600;font-size:15px;margin-bottom:4px;color:var(--paper);">' + item.titulo + '</div>' : '';
 
