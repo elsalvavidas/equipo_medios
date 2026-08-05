@@ -98,24 +98,14 @@
     -webkit-backdrop-filter:blur(20px) saturate(140%);
   }
 
-  /* Efecto glass específico para notitas secundarias */
-.card-glass-notita {
+  /* Efecto glass para notitas y contenedores */
+  .card-glass-notita {
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(16px) saturate(140%);
     -webkit-backdrop-filter: blur(16px) saturate(140%);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--radius);
   }
-
-  .card-servicio-cal{
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    position: relative;
-    transition: transform .2s ease, border-color .2s ease;
-  }
-  .card-servicio-cal:hover{transform:translateY(-3px);border-color:var(--line-strong);}
 
   .eyebrow{
     font-family:var(--mono);
@@ -281,16 +271,12 @@
 
   /* ---- tarjeta cronograma tipo calendario/agenda ---- */
   .card-servicio-cal{
-    padding:18px;
+    padding:20px;
     display:flex;
-    gap:16px;
+    align-items:center;
+    gap:20px;
     position:relative;
     transition:transform .2s ease, border-color .2s ease;
-    backdrop-filter:blur(12px);
-    -webkit-backdrop-filter:blur(12px);
-    border-radius:12px;
-    border:1px solid var(--line);
-    margin-bottom:16px;
   }
   .card-servicio-cal:hover{transform:translateY(-3px);border-color:var(--line-strong);}
 
@@ -531,7 +517,7 @@
         <div class="field">
           <label for="c-color">Color de la tarjeta</label>
           <select id="c-color">
-            <option value="rgba(255, 255, 255, 0.05)">Gris (Por defecto)</option>
+            <option value="rgba(255, 255, 255, 0.03)">Gris (Por defecto)</option>
             <option value="rgba(59, 130, 246, 0.15)">Azul</option>
             <option value="rgba(16, 185, 129, 0.15)">Verde</option>
             <option value="rgba(239, 68, 68, 0.15)">Rojo</option>
@@ -700,7 +686,7 @@
     renderCronograma(ultimoCronograma);
   }
 
-function renderCronograma(lista){
+  function renderCronograma(lista){
     ultimoCronograma = lista;
     const cont = document.getElementById('grid-cronograma');
     if (!lista.length){
@@ -711,29 +697,7 @@ function renderCronograma(lista){
       const f = badgeFecha(item.fecha);
       const admin = pinActual ? '<button class="icon-btn card-edit" data-editar-cronograma=\'' + JSON.stringify(item).replace(/'/g,'&#39;') + '\'>✎</button>' : '';
       const asignados = asignadoHTML('Sonido', item.sonido) + asignadoHTML('Transmisión', item.transmision) + asignadoHTML('Letras', item.letras);
-      const tituloEvento = item.titulo ? '<div style="font-family:var(--display);font-weight:600;font-size:15px;margin-bottom:4px;color:var(--paper);">' + item.titulo + '</div>' : '';
-
-      return '<div class="card-glass-notita card-servicio-cal">' + admin +
-        '<div class="fecha-badge"><span class="dia-semana">' + f.dia + '</span><span class="dia-numero">' + f.numero + '</span><span class="mes">' + f.mes + '</span></div>' +
-        '<div class="servicio-info">' +
-          tituloEvento +
-          (item.horario ? '<div class="horario-tag">' + item.horario + '</div>' : '') +
-          '<div class="asignados" style="margin-top:8px;">' + (asignados || '<span class="sin-asignar">Sin asignar todavía</span>') + '</div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-
-    document.querySelectorAll('[data-editar-cronograma]').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        abrirModalCronograma(JSON.parse(btn.getAttribute('data-editar-cronograma')));
-      });
-    });
-  }
-    cont.innerHTML = lista.map(function(item){
-      const f = badgeFecha(item.fecha);
-      const admin = pinActual ? '<button class="icon-btn card-edit" data-editar-cronograma=\'' + JSON.stringify(item).replace(/'/g,'&#39;') + '\'>✎</button>' : '';
-      const asignados = asignadoHTML('Sonido', item.sonido) + asignadoHTML('Transmisión', item.transmision) + asignadoHTML('Letras', item.letras);
-      const bgColor = item.color || 'rgba(255, 255, 255, 0.05)';
+      const bgColor = item.color || 'rgba(255, 255, 255, 0.03)';
       const tituloEvento = item.titulo ? '<div style="font-family:var(--display);font-weight:600;font-size:15px;margin-bottom:4px;color:var(--paper);">' + item.titulo + '</div>' : '';
 
       return '<div class="card-glass-notita card-servicio-cal" style="background-color: ' + bgColor + ';">' + admin +
@@ -785,7 +749,7 @@ function renderCronograma(lista){
     document.getElementById('c-fecha').value = item ? (item.fecha || '') : '';
     document.getElementById('c-horario').value = item ? (item.horario || '') : '';
     document.getElementById('c-titulo').value = item ? (item.titulo || '') : '';
-    document.getElementById('c-color').value = item ? (item.color || 'rgba(255, 255, 255, 0.05)') : 'rgba(255, 255, 255, 0.05)';
+    document.getElementById('c-color').value = item ? (item.color || 'rgba(255, 255, 255, 0.03)') : 'rgba(255, 255, 255, 0.03)';
     document.getElementById('c-sonido').value = item ? (item.sonido || '') : '';
     document.getElementById('c-transmision').value = item ? (item.transmision || '') : '';
     document.getElementById('c-letras').value = item ? (item.letras || '') : '';
